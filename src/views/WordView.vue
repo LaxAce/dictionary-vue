@@ -1,38 +1,88 @@
 <template>
-  <h1>{{ word }}</h1>
+  <div class="word">
+    <button class="go-back" @click="handleGoBack">
+      <fa icon="arrow-left" class="icon" />
+      <span>Search</span>
+    </button>
+
+    <div v-if="data" class="word-container">
+      <h1>{{ displayWord }}</h1>
+      <Phonetics :phonetics="phonetics" />
+      <PartOfSpeech
+        :meanings="meanings"
+        :posIndex="posIndex"
+        :handlePartOfSpeech="handlePartOfSpeech"
+      />
+      <Definitions :activePOS="activePOS" />
+      <Example :activePOS="activePOS" />
+    </div>
+  </div>
 </template>
 
 <script>
 import router from "@/router";
 import { ref } from "@vue/reactivity";
-import { watchEffect } from "@vue/runtime-core";
+import { computed, onMounted, watch, watchEffect } from "@vue/runtime-core";
+
+// Components
+import Phonetics from "../components/Phonetics.vue";
+import PartOfSpeech from "../components/PartOfSpeech.vue";
+import Definitions from "../components/Definitions.vue";
+import Example from "../components/Example.vue";
 
 // Composables
 import useFetch from "@/composables/useFetch";
 
 export default {
   props: ["word"],
+  components: { Phonetics, PartOfSpeech, Definitions, Example },
 
   setup({ word }) {
     const posIndex = ref(0);
-    console.log(word);
+    const searchedWord = ref("");
+    const displayWord = ref("");
+    const phonetics = ref("");
+    const meanings = ref("");
 
     const { data, loading, error } = useFetch(
       `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`
     );
 
     watchEffect(() => {
-      console.log(data);
+      searchedWord.value = data.value ? data.value[0] : null;
+      displayWord.value = searchedWord.value?.word;
+      phonetics.value = searchedWord.value?.phonetics;
+      meanings.value = searchedWord.value?.meanings;
     });
+
+    const activePOS = computed(() =>
+      meanings.value?.find((value, i) => posIndex.value == i)
+    );
 
     const handleGoBack = () => {
       router.push("/");
+    };
+
+    const handlePartOfSpeech = (i) => {
+      posIndex.value = i;
+    };
+
+    return {
+      data,
+      posIndex,
+      searchedWord,
+      displayWord,
+      phonetics,
+      meanings,
+      activePOS,
+      handleGoBack,
+      handlePartOfSpeech,
     };
   },
 };
 </script>
 
-<style scoped>
+<style>
 .word {
   margin: 5% 5% 30% 5%;
 }

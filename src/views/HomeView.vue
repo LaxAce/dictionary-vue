@@ -10,7 +10,7 @@
         @keyup="search"
         v-model="input"
       />
-      <fa icon="search" class="search-icon" @click="handleSearch(input)" />
+      <fa icon="search" class="icon search-icon" @click="handleSearch(input)" />
     </div>
     <Suggestions
       :suggestions="suggestions"
@@ -130,7 +130,6 @@ input {
 .search-icon {
   fill: #333;
   cursor: pointer;
-  font-size: 2.4rem;
 }
 
 @media screen and (min-width: 768px) {
